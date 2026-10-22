@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon";
-import { demoPatient, demoAppointments, demoPrescriptions, demoReports, doctors } from "../data/mockData";
+import { doctors, demoReports, formatDisplayDate } from "../data/mockData";
+import {
+  usePatientProfile,
+  useAppointments,
+  usePrescriptions,
+} from "../hooks/useSharedData";
 
 function greeting() {
   const h = new Date().getHours();
@@ -10,15 +15,21 @@ function greeting() {
 }
 
 export default function PatientDashboard() {
-  const upcoming = demoAppointments.find((a) => a.status === "Upcoming");
+  const { patient } = usePatientProfile();
+  const { appointments, cancelAppointment } = useAppointments();
+  const { prescriptions } = usePrescriptions();
+
+  const upcoming = (appointments || []).find((a) => a.status === "Upcoming");
   const upcomingDoctor = upcoming && doctors.find((d) => d.id === upcoming.doctorId);
-  const activePrescriptions = demoPrescriptions.filter((p) => p.status === "Active").length;
-  const newReports = demoReports.length;
+  const activePrescriptions = (prescriptions || []).filter((p) => p.status === "Active").length;
+  const newReports = (demoReports || []).length;
 
   return (
     <div>
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontSize: "clamp(22px,3vw,28px)" }}>{greeting()}, {demoPatient.firstName} 👋</h1>
+        <h1 style={{ fontSize: "clamp(22px,3vw,28px)" }}>
+          {greeting()}, {patient.firstName || patient.name?.split(" ")[0] || "Patient"} 👋
+        </h1>
         <p className="muted" style={{ marginTop: 6 }}>Here's your healthcare overview.</p>
       </div>
 
@@ -49,13 +60,23 @@ export default function PatientDashboard() {
               <p style={{ fontWeight: 700, fontSize: 17 }}>{upcomingDoctor?.name}</p>
               <p className="muted" style={{ fontSize: 13.5, marginBottom: 12 }}>{upcomingDoctor?.specialty}</p>
               <div className="flex items-center gap-16" style={{ marginBottom: 16 }}>
-                <span className="flex items-center gap-8" style={{ fontSize: 13.5 }}><Icon name="calendar" size={15} /> {formatDate(upcoming.date)}</span>
-                <span className="flex items-center gap-8" style={{ fontSize: 13.5 }}><Icon name="clock" size={15} /> {upcoming.time}</span>
+                <span className="flex items-center gap-8" style={{ fontSize: 13.5 }}>
+                  <Icon name="calendar" size={15} /> {formatDisplayDate(upcoming.date)}
+                </span>
+                <span className="flex items-center gap-8" style={{ fontSize: 13.5 }}>
+                  <Icon name="clock" size={15} /> {upcoming.time}
+                </span>
               </div>
               <div className="flex gap-8">
                 <Link to="/patient/appointments" className="btn btn-outline btn-sm">View</Link>
-                <Link to="/patient/appointments" className="btn btn-ghost btn-sm">Reschedule</Link>
-                <Link to="/patient/appointments" className="btn btn-ghost btn-sm" style={{ color: "var(--red-600)" }}>Cancel</Link>
+                <Link to={`/patient/book-appointment/${upcoming.doctorId}`} className="btn btn-ghost btn-sm">Reschedule</Link>
+                <button
+                  onClick={() => cancelAppointment(upcoming.id)}
+                  className="btn btn-ghost btn-sm"
+                  style={{ color: "var(--red-600)" }}
+                >
+                  Cancel
+                </button>
               </div>
             </>
           ) : (
@@ -64,20 +85,22 @@ export default function PatientDashboard() {
         </div>
 
         <StatCard icon="pill" tone="teal" title="Prescriptions" value={`${activePrescriptions} Active`} to="/patient/prescriptions" cta="View Prescriptions" />
-        <StatCard icon="file" tone="amber" title="Reports" value={`${newReports} New`} to="/patient/reports" cta="View Reports" />
+        <StatCard icon="file" tone="amber" title="Reports" value={`${newReports} Available`} to="/patient/reports" cta="View Reports" />
 
         <div className="card stat-card" style={{ gridColumn: "span 2" }}>
           <p style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 14 }}>Patient ID</p>
-          <p className="font-mono" style={{ fontSize: 22, fontWeight: 600, color: "var(--navy-900)", marginBottom: 16 }}>{demoPatient.patientId}</p>
-          <Link to="/patient/profile" className="btn btn-outline btn-sm">Show Patient ID</Link>
+          <p className="font-mono" style={{ fontSize: 22, fontWeight: 600, color: "var(--navy-900)", marginBottom: 16 }}>
+            {patient.patientId}
+          </p>
+          <Link to="/patient/profile" className="btn btn-outline btn-sm">Show Patient ID & QR</Link>
         </div>
 
         <div className="card stat-card" style={{ gridColumn: "span 2" }}>
           <p style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 14 }}>Medical Summary</p>
           <div className="flex gap-24" style={{ flexWrap: "wrap" }}>
-            <MiniStat label="Blood Group" value={demoPatient.bloodGroup} />
-            <MiniStat label="Allergies" value={demoPatient.allergies} />
-            <MiniStat label="Age" value={ageFromDob(demoPatient.dob)} />
+            <MiniStat label="Blood Group" value={patient.bloodGroup || "O+"} />
+            <MiniStat label="Allergies" value={patient.allergies || "None"} />
+            <MiniStat label="Age" value={patient.dob ? ageFromDob(patient.dob) : "30 yrs"} />
           </div>
         </div>
       </div>
@@ -119,9 +142,6 @@ function EmptyMini({ text, cta, to }) {
   );
 }
 
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-}
 function ageFromDob(dob) {
   const diff = Date.now() - new Date(dob).getTime();
   return Math.floor(diff / (365.25 * 24 * 3600 * 1000)) + " yrs";

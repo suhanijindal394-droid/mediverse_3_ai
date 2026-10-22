@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import Icon from "../components/Icon";
-import { patientsList } from "../data/mockData";
+import { patientsList, formatDisplayDate } from "../data/mockData";
 
 export default function AdminPatients() {
   const [query, setQuery] = useState("");
@@ -39,7 +39,7 @@ export default function AdminPatients() {
                 <td style={{ padding: "12px 16px", fontSize: 13.5 }} className="font-mono">{p.patientId}</td>
                 <td style={{ padding: "12px 16px", fontWeight: 600, fontSize: 13.5 }}>{p.name}</td>
                 <td style={{ padding: "12px 16px", fontSize: 13.5 }}>{p.age}</td>
-                <td style={{ padding: "12px 16px", fontSize: 13.5 }}>{new Date(p.lastVisit).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</td>
+                <td style={{ padding: "12px 16px", fontSize: 13.5 }}>{formatDisplayDate(p.lastVisit)}</td>
                 <td style={{ padding: "12px 16px" }}><span className="badge badge-green">Active</span></td>
                 <td style={{ padding: "12px 16px" }}>
                   <button className="icon-btn" title="View"><Icon name="chevronRight" size={16} /></button>

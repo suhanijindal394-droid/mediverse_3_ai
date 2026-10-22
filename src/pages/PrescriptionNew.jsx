@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import Icon from "../components/Icon";
+import useAuth from "../hooks/useAuth";
+import { usePrescriptions } from "../hooks/useSharedData";
+import { demoPatient } from "../data/mockData";
 
 const emptyMedicine = { name: "", dosage: "", frequency: "", duration: "", instructions: "" };
 
 export default function PrescriptionNew() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const { addPrescription } = usePrescriptions();
   const { patientId, patientName } = location.state || {};
 
   const [medicines, setMedicines] = useState([{ ...emptyMedicine }]);
@@ -25,6 +30,20 @@ export default function PrescriptionNew() {
   }
 
   function handleSave() {
+    const validMeds = medicines.filter((m) => m.name.trim());
+    if (validMeds.length === 0) {
+      alert("Please enter at least one medicine name.");
+      return;
+    }
+
+    addPrescription({
+      patientId: patientId || demoPatient.patientId,
+      doctorId: session?.id || "doc-1",
+      medicines: validMeds,
+      instructions,
+      followUp,
+    });
+
     setSaved(true);
     setTimeout(() => navigate("/doctor/dashboard"), 1400);
   }

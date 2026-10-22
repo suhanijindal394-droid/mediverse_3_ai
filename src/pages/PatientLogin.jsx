@@ -2,13 +2,18 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import Icon from "../components/Icon";
 import useAuth from "../hooks/useAuth";
+import { useAppointments } from "../hooks/useSharedData";
+import { formatDisplayDate } from "../data/mockData";
 
 export default function PatientLogin() {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [error, setError] = useState("");
   const { loginAsPatient } = useAuth();
+  const { bookAppointment } = useAppointments();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const pendingBooking = location.state?.pendingBooking;
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,8 +26,24 @@ export default function PatientLogin() {
       return;
     }
     setError("");
-    // Demo auth — any credentials log in as the demo patient (Khushboo Ahuja)
+    // Demo auth — log in as patient
     loginAsPatient();
+
+    // If there was a pending booking from DoctorProfile, complete it now!
+    if (pendingBooking) {
+      const newAppt = bookAppointment({
+        doctorId: pendingBooking.doctorId,
+        date: pendingBooking.date,
+        time: pendingBooking.time,
+        type: pendingBooking.type || "In-person",
+        notes: `Consultation with ${pendingBooking.doctorName || "doctor"}`,
+      });
+      navigate(`/patient/appointment-confirmation/${newAppt.id}`, {
+        state: newAppt,
+      });
+      return;
+    }
+
     const redirectTo = location.state?.from || "/patient/dashboard";
     navigate(redirectTo);
   }
@@ -30,6 +51,27 @@ export default function PatientLogin() {
   return (
     <section className="section wrap" style={{ display: "flex", justifyContent: "center" }}>
       <div className="card card-pad" style={{ maxWidth: 440, width: "100%" }}>
+        {pendingBooking && (
+          <div
+            style={{
+              padding: "12px 14px",
+              background: "var(--teal-50)",
+              border: "1px solid var(--teal-200)",
+              borderRadius: 10,
+              marginBottom: 20,
+              fontSize: 13,
+            }}
+          >
+            <p style={{ fontWeight: 700, color: "var(--teal-800)", marginBottom: 2 }}>
+              Finish Booking Appointment
+            </p>
+            <p style={{ color: "var(--teal-700)" }}>
+              Log in to confirm your slot with {pendingBooking.doctorName} on{" "}
+              {formatDisplayDate(pendingBooking.date)} at {pendingBooking.time}.
+            </p>
+          </div>
+        )}
+
         <div className="center" style={{ marginBottom: 26 }}>
           <div className="brand-mark" style={{ margin: "0 auto 14px" }}>
             <Icon name="logo" size={18} style={{ color: "#5EEAD4" }} />
@@ -50,7 +92,7 @@ export default function PatientLogin() {
         </form>
 
         <div className="flex justify-between" style={{ marginTop: 16 }}>
-          <Link to="#" className="muted" style={{ fontSize: 13.5 }}>Forgot Password?</Link>
+          <Link to="/patient/forgot-password" className="muted" style={{ fontSize: 13.5 }}>Forgot Password?</Link>
           <Link to="/patient/register" style={{ fontSize: 13.5, color: "var(--teal-600)", fontWeight: 600 }}>Create Patient Account</Link>
         </div>
 

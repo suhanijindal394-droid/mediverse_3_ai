@@ -14,6 +14,7 @@ import HowItWorks from "./pages/HowItWorks";
 
 import PatientLogin from "./pages/PatientLogin";
 import PatientRegister from "./pages/PatientRegister";
+import ForgotPassword from "./pages/ForgotPassword";
 import PatientLayout from "./components/PatientLayout";
 import PatientDashboard from "./pages/PatientDashboard";
 import AISpecialistFinder from "./pages/AISpecialistFinder";
@@ -64,6 +65,7 @@ export default function App() {
         {/* ---------- Auth ---------- */}
         <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />
+        <Route path="/patient/forgot-password" element={<ForgotPassword />} />
         <Route path="/doctor/login" element={<DoctorLogin />} />
         <Route path="/pharmacy/login" element={<PharmacyLogin />} />
         <Route path="/admin/login" element={<AdminLogin />} />

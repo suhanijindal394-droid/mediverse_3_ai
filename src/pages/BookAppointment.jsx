@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate, Link, Navigate } from "react-router-dom";
 import Icon from "../components/Icon";
 import { doctors, timeSlots, getUnavailableSlots } from "../data/mockData";
-import useLocalStorage from "../hooks/useLocalStorage";
+import { useAppointments } from "../hooks/useSharedData";
 
 function nextNDays(n) {
   const days = [];
@@ -18,8 +18,8 @@ export default function BookAppointment() {
   const { doctorId } = useParams();
   const navigate = useNavigate();
   const doc = doctors.find((d) => d.id === doctorId);
+  const { bookAppointment } = useAppointments();
 
-  const [appointments, setAppointments] = useLocalStorage("mv_appointments", []);
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedTime, setSelectedTime] = useState(null);
   const [consultType, setConsultType] = useState("In-person");
@@ -34,23 +34,19 @@ export default function BookAppointment() {
   function handleConfirm() {
     if (!selectedTime) return;
     setSubmitting(true);
-    const random = Math.floor(100000 + Math.random() * 899999);
-    const appointmentId = `AP-2026-${random}`;
 
-    const newAppointment = {
-      id: appointmentId,
+    const newAppointment = bookAppointment({
       doctorId: doc.id,
       date: dateObj.toISOString().slice(0, 10),
       time: selectedTime,
       type: consultType,
-      status: "Upcoming",
       room: consultType === "In-person" ? "Room 214, Block A" : "—",
-    };
+      notes: `Consultation (${consultType}) with ${doc.name}`,
+    });
 
     setTimeout(() => {
-      setAppointments([newAppointment, ...appointments]);
-      navigate(`/patient/appointment-confirmation/${appointmentId}`, { state: newAppointment });
-    }, 700);
+      navigate(`/patient/appointment-confirmation/${newAppointment.id}`, { state: newAppointment });
+    }, 500);
   }
 
   return (

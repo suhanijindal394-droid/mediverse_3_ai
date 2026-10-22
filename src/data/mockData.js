@@ -25,6 +25,23 @@ export function getUnavailableSlots(doctorId) {
   return timeSlots.filter((_, i) => (i + seed) % 4 === 0);
 }
 
+export function getRelativeDate(daysOffset) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  return d.toISOString().slice(0, 10);
+}
+
+export function formatDisplayDate(dateStr) {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return String(dateStr);
+  return d.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export const demoPatient = {
   patientId: "PT-2026-10482",
   name: "Khushboo Ahuja",
@@ -39,46 +56,115 @@ export const demoPatient = {
   allergies: "Penicillin",
 };
 
-export const demoAppointments = [
-  { id: "AP-2026-009281", doctorId: "doc-1", date: "2026-08-14", time: "10:30 AM", type: "In-person", status: "Upcoming", room: "Room 214, Block A" },
-  { id: "AP-2026-008120", doctorId: "doc-6", date: "2026-07-02", time: "11:00 AM", type: "In-person", status: "Completed", room: "Room 102, Block A" },
-  { id: "AP-2026-007765", doctorId: "doc-3", date: "2026-06-18", time: "03:00 PM", type: "Video consultation", status: "Completed", room: "—" },
-  { id: "AP-2026-006590", doctorId: "doc-2", date: "2026-05-04", time: "09:30 AM", type: "In-person", status: "Cancelled", room: "Room 301, Block B" },
-];
+export function getInitialAppointments() {
+  return [
+    {
+      id: "AP-2026-009281",
+      patientId: "PT-2026-10482",
+      doctorId: "doc-1",
+      date: getRelativeDate(2),
+      time: "10:30 AM",
+      type: "In-person",
+      status: "Upcoming",
+      room: "Room 214, Block A",
+      notes: "Cardiovascular evaluation and ECG review.",
+    },
+    {
+      id: "AP-2026-008120",
+      patientId: "PT-2026-10482",
+      doctorId: "doc-6",
+      date: getRelativeDate(-14),
+      time: "11:00 AM",
+      type: "In-person",
+      status: "Completed",
+      room: "Room 102, Block A",
+      notes: "Routine quarterly consultation and vitals review.",
+    },
+    {
+      id: "AP-2026-007765",
+      patientId: "PT-2026-10482",
+      doctorId: "doc-3",
+      date: getRelativeDate(-35),
+      time: "03:00 PM",
+      type: "Video consultation",
+      status: "Completed",
+      room: "—",
+      notes: "Follow-up regarding contact dermatitis and allergy relief.",
+    },
+    {
+      id: "AP-2026-006590",
+      patientId: "PT-2026-10482",
+      doctorId: "doc-2",
+      date: getRelativeDate(-60),
+      time: "09:30 AM",
+      type: "In-person",
+      status: "Cancelled",
+      room: "Room 301, Block B",
+      notes: "Cancelled by patient due to schedule conflict.",
+    },
+  ];
+}
 
-export const demoPrescriptions = [
-  {
-    id: "RX-10028", appointmentId: "AP-2026-008120", doctorId: "doc-6", date: "2026-07-02", status: "Active", followUp: "2026-08-02",
-    medicines: [
-      { name: "Metformin", dosage: "500 mg", frequency: "2 times/day", duration: "30 days", instructions: "After food" },
-      { name: "Atorvastatin", dosage: "10 mg", frequency: "1 time/day", duration: "30 days", instructions: "At night" },
-    ],
-    instructions: "Monitor blood sugar weekly. Follow up in 4 weeks with fasting report.",
-  },
-  {
-    id: "RX-10015", appointmentId: "AP-2026-007765", doctorId: "doc-3", date: "2026-06-18", status: "Active", followUp: "2026-07-18",
-    medicines: [
-      { name: "Cetirizine", dosage: "10 mg", frequency: "1 time/day", duration: "10 days", instructions: "At night" },
-      { name: "Hydrocortisone Cream", dosage: "1%", frequency: "2 times/day", duration: "7 days", instructions: "Apply on affected area" },
-    ],
-    instructions: "Avoid harsh soaps. Use fragrance-free moisturiser.",
-  },
-];
+export const demoAppointments = getInitialAppointments();
 
-export const demoReports = [
-  { id: "RPT-2201", name: "Complete Blood Count (CBC)", category: "Blood Tests", date: "2026-08-05", doctorId: "doc-6", department: "General Medicine", status: "Ready", summary: "All values within normal reference range. No signs of infection or anaemia." },
-  { id: "RPT-2198", name: "ECG Report", category: "ECG", date: "2026-08-01", doctorId: "doc-1", department: "Cardiology", status: "Ready", summary: "Normal sinus rhythm. No ST-segment abnormalities detected." },
-  { id: "RPT-2170", name: "Lipid Profile", category: "Blood Tests", date: "2026-07-02", doctorId: "doc-6", department: "General Medicine", status: "Ready", summary: "LDL cholesterol slightly elevated. Dietary changes recommended." },
-  { id: "RPT-2140", name: "Chest X-Ray", category: "X-Ray", date: "2026-06-18", doctorId: "doc-3", department: "Dermatology", status: "Ready", summary: "No abnormalities detected in lung fields." },
-];
+export function getInitialPrescriptions() {
+  return [
+    {
+      id: "RX-10028",
+      patientId: "PT-2026-10482",
+      appointmentId: "AP-2026-008120",
+      doctorId: "doc-6",
+      date: getRelativeDate(-14),
+      status: "Active",
+      followUp: getRelativeDate(16),
+      medicines: [
+        { name: "Metformin", dosage: "500 mg", frequency: "2 times/day", duration: "30 days", instructions: "After food" },
+        { name: "Atorvastatin", dosage: "10 mg", frequency: "1 time/day", duration: "30 days", instructions: "At night" },
+      ],
+      instructions: "Monitor blood sugar weekly. Follow up in 4 weeks with fasting report.",
+    },
+    {
+      id: "RX-10015",
+      patientId: "PT-2026-10482",
+      appointmentId: "AP-2026-007765",
+      doctorId: "doc-3",
+      date: getRelativeDate(-35),
+      status: "Active",
+      followUp: getRelativeDate(-5),
+      medicines: [
+        { name: "Cetirizine", dosage: "10 mg", frequency: "1 time/day", duration: "10 days", instructions: "At night" },
+        { name: "Hydrocortisone Cream", dosage: "1%", frequency: "2 times/day", duration: "7 days", instructions: "Apply on affected area" },
+      ],
+      instructions: "Avoid harsh soaps. Use fragrance-free moisturiser.",
+    },
+  ];
+}
 
-export const demoNotifications = [
-  { id: 1, icon: "calendar", text: "Appointment with Dr. Ananya Sharma is tomorrow at 10:30 AM.", time: "2h ago", read: false },
-  { id: 2, icon: "pill", text: "Your prescription RX-10028 is ready for pharmacy pickup.", time: "5h ago", read: false },
-  { id: 3, icon: "file", text: "New lab report (ECG) has been uploaded to your records.", time: "1d ago", read: true },
-  { id: 4, icon: "doctor", text: "Your appointment with Dr. Sanjay Rao has been confirmed.", time: "3d ago", read: true },
-  { id: 5, icon: "calendar", text: "Follow-up consultation reminder: 2 Aug 2026.", time: "5d ago", read: true },
-];
+export const demoPrescriptions = getInitialPrescriptions();
+
+export function getInitialReports() {
+  return [
+    { id: "RPT-2201", patientId: "PT-2026-10482", name: "Complete Blood Count (CBC)", category: "Blood Tests", date: getRelativeDate(-7), doctorId: "doc-6", department: "General Medicine", status: "Ready", summary: "All values within normal reference range. No signs of infection or anaemia." },
+    { id: "RPT-2198", patientId: "PT-2026-10482", name: "ECG Report", category: "ECG", date: getRelativeDate(-12), doctorId: "doc-1", department: "Cardiology", status: "Ready", summary: "Normal sinus rhythm. No ST-segment abnormalities detected." },
+    { id: "RPT-2170", patientId: "PT-2026-10482", name: "Lipid Profile", category: "Blood Tests", date: getRelativeDate(-14), doctorId: "doc-6", department: "General Medicine", status: "Ready", summary: "LDL cholesterol slightly elevated. Dietary changes recommended." },
+    { id: "RPT-2140", patientId: "PT-2026-10482", name: "Chest X-Ray", category: "X-Ray", date: getRelativeDate(-35), doctorId: "doc-3", department: "Dermatology", status: "Ready", summary: "No abnormalities detected in lung fields." },
+  ];
+}
+
+export const demoReports = getInitialReports();
+
+export function getInitialNotifications() {
+  const now = Date.now();
+  return [
+    { id: "notif-1", patientId: "PT-2026-10482", title: "Upcoming Appointment", message: "Appointment with Dr. Ananya Sharma is scheduled for 10:30 AM.", text: "Appointment with Dr. Ananya Sharma is scheduled for 10:30 AM.", icon: "calendar", time: "2h ago", timestamp: now - 2 * 3600 * 1000, read: false, type: "appointment" },
+    { id: "notif-2", patientId: "PT-2026-10482", title: "Prescription Ready", message: "Your prescription RX-10028 is ready for pharmacy pickup.", text: "Your prescription RX-10028 is ready for pharmacy pickup.", icon: "pill", time: "5h ago", timestamp: now - 5 * 3600 * 1000, read: false, type: "prescription" },
+    { id: "notif-3", patientId: "PT-2026-10482", title: "Lab Report Uploaded", message: "New lab report (ECG) has been uploaded to your records.", text: "New lab report (ECG) has been uploaded to your records.", icon: "file", time: "1d ago", timestamp: now - 24 * 3600 * 1000, read: true, type: "report" },
+    { id: "notif-4", patientId: "PT-2026-10482", title: "Appointment Confirmed", message: "Your appointment with Dr. Sanjay Rao has been confirmed.", text: "Your appointment with Dr. Sanjay Rao has been confirmed.", icon: "doctor", time: "3d ago", timestamp: now - 3 * 24 * 3600 * 1000, read: true, type: "appointment" },
+    { id: "notif-5", patientId: "PT-2026-10482", title: "Follow-up Consultation", message: "Follow-up consultation reminder with Dr. Sanjay Rao.", text: "Follow-up consultation reminder scheduled.", icon: "calendar", time: "5d ago", timestamp: now - 5 * 24 * 3600 * 1000, read: true, type: "appointment" },
+  ];
+}
+
+export const demoNotifications = getInitialNotifications();
 
 // simple keyword → department mapping used by the AI Specialist Finder (rule-based, not a diagnosis)
 export const careCategoryRules = [
@@ -105,11 +191,11 @@ export const emergencyKeywords = [
 
 // A small roster of fictional patients doctors can search/browse in the Doctor Portal
 export const patientsList = [
-  { patientId: "PT-2026-10482", name: "Khushboo Ahuja", age: 30, gender: "Female", phone: "+91 98765 43210", lastVisit: "2026-08-05", bloodGroup: "O+", allergies: "Penicillin", emergencyContact: "+91 98111 22233 (Sister)" },
-  { patientId: "PT-2026-10391", name: "Rohit Malik", age: 45, gender: "Male", phone: "+91 98234 55671", lastVisit: "2026-08-10", bloodGroup: "B+", allergies: "None", emergencyContact: "+91 98234 00000 (Wife)" },
-  { patientId: "PT-2026-10287", name: "Simran Kaur", age: 27, gender: "Female", phone: "+91 99887 12345", lastVisit: "2026-07-28", bloodGroup: "A-", allergies: "Sulfa drugs", emergencyContact: "+91 99887 54321 (Mother)" },
-  { patientId: "PT-2026-10156", name: "Aditya Verma", age: 58, gender: "Male", phone: "+91 97654 32109", lastVisit: "2026-08-01", bloodGroup: "AB+", allergies: "None", emergencyContact: "+91 97654 88888 (Son)" },
-  { patientId: "PT-2026-09980", name: "Neha Chawla", age: 34, gender: "Female", phone: "+91 96543 21098", lastVisit: "2026-06-15", bloodGroup: "O-", allergies: "Latex", emergencyContact: "+91 96543 99999 (Husband)" },
+  { patientId: "PT-2026-10482", name: "Khushboo Ahuja", age: 30, gender: "Female", phone: "+91 98765 43210", lastVisit: getRelativeDate(-5), bloodGroup: "O+", allergies: "Penicillin", emergencyContact: "+91 98111 22233 (Sister)" },
+  { patientId: "PT-2026-10391", name: "Rohit Malik", age: 45, gender: "Male", phone: "+91 98234 55671", lastVisit: getRelativeDate(-10), bloodGroup: "B+", allergies: "None", emergencyContact: "+91 98234 00000 (Wife)" },
+  { patientId: "PT-2026-10287", name: "Simran Kaur", age: 27, gender: "Female", phone: "+91 99887 12345", lastVisit: getRelativeDate(-18), bloodGroup: "A-", allergies: "Sulfa drugs", emergencyContact: "+91 99887 54321 (Mother)" },
+  { patientId: "PT-2026-10156", name: "Aditya Verma", age: 58, gender: "Male", phone: "+91 97654 32109", lastVisit: getRelativeDate(-25), bloodGroup: "AB+", allergies: "None", emergencyContact: "+91 97654 88888 (Son)" },
+  { patientId: "PT-2026-09980", name: "Neha Chawla", age: 34, gender: "Female", phone: "+91 96543 21098", lastVisit: getRelativeDate(-40), bloodGroup: "O-", allergies: "Latex", emergencyContact: "+91 96543 99999 (Husband)" },
 ];
 
 // Doctor's "today" schedule (demo)

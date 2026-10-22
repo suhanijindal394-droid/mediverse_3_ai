@@ -1,12 +1,18 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import Icon from "../components/Icon";
-import { demoPrescriptions, doctors, demoPatient } from "../data/mockData";
+import { doctors, formatDisplayDate } from "../data/mockData";
+import { usePrescriptions, usePatientProfile } from "../hooks/useSharedData";
 
 export default function PrescriptionDetail() {
   const { id } = useParams();
-  const rx = demoPrescriptions.find((p) => p.id === id);
+  const { prescriptions } = usePrescriptions();
+  const { patient } = usePatientProfile();
+
+  const rx = (prescriptions || []).find((p) => p.id === id);
   if (!rx) return <Navigate to="/patient/prescriptions" replace />;
+
   const doc = doctors.find((d) => d.id === rx.doctorId);
+  const medicines = rx.medicines || [];
 
   return (
     <div>
@@ -23,23 +29,23 @@ export default function PrescriptionDetail() {
               <p className="muted" style={{ fontSize: 12 }}>Model Town, Ludhiana, Punjab</p>
             </div>
           </div>
-          <span className={`badge ${rx.status === "Active" ? "badge-green" : "badge-navy"}`}>{rx.status}</span>
+          <span className={`badge ${rx.status === "Active" ? "badge-green" : "badge-navy"}`}>{rx.status || "Active"}</span>
         </div>
 
         <div className="grid grid-2" style={{ marginBottom: 24 }}>
           <div>
             <p className="muted" style={{ fontSize: 11.5, marginBottom: 2 }}>DOCTOR</p>
-            <p style={{ fontWeight: 700, fontSize: 14.5 }}>{doc?.name}</p>
+            <p style={{ fontWeight: 700, fontSize: 14.5 }}>{doc?.name || "Attending Physician"}</p>
             <p className="muted" style={{ fontSize: 12.5 }}>{doc?.specialty}, {doc?.qualifications}</p>
           </div>
           <div>
             <p className="muted" style={{ fontSize: 11.5, marginBottom: 2 }}>PATIENT</p>
-            <p style={{ fontWeight: 700, fontSize: 14.5 }}>{demoPatient.name}</p>
-            <p className="font-mono muted" style={{ fontSize: 12.5 }}>{demoPatient.patientId}</p>
+            <p style={{ fontWeight: 700, fontSize: 14.5 }}>{patient.name}</p>
+            <p className="font-mono muted" style={{ fontSize: 12.5 }}>{patient.patientId}</p>
           </div>
           <div>
             <p className="muted" style={{ fontSize: 11.5, marginBottom: 2 }}>DATE ISSUED</p>
-            <p style={{ fontWeight: 600, fontSize: 13.5 }}>{new Date(rx.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</p>
+            <p style={{ fontWeight: 600, fontSize: 13.5 }}>{formatDisplayDate(rx.date)}</p>
           </div>
           <div>
             <p className="muted" style={{ fontSize: 11.5, marginBottom: 2 }}>PRESCRIPTION ID</p>
@@ -56,8 +62,8 @@ export default function PrescriptionDetail() {
             </tr>
           </thead>
           <tbody>
-            {rx.medicines.map((m) => (
-              <tr key={m.name} style={{ borderBottom: "1px solid var(--navy-50)" }}>
+            {medicines.map((m, idx) => (
+              <tr key={idx} style={{ borderBottom: "1px solid var(--navy-50)" }}>
                 <td style={{ padding: "12px", fontWeight: 600, fontSize: 13.5 }}>{m.name}</td>
                 <td style={{ padding: "12px", fontSize: 13.5 }}>{m.dosage}</td>
                 <td style={{ padding: "12px", fontSize: 13.5 }}>{m.frequency}</td>
@@ -68,14 +74,19 @@ export default function PrescriptionDetail() {
           </tbody>
         </table>
 
-        <div style={{ marginBottom: 20 }}>
-          <p className="muted" style={{ fontSize: 11.5, marginBottom: 4 }}>DOCTOR INSTRUCTIONS</p>
-          <p style={{ fontSize: 13.5 }}>{rx.instructions}</p>
-        </div>
-        <div style={{ marginBottom: 26 }}>
-          <p className="muted" style={{ fontSize: 11.5, marginBottom: 4 }}>FOLLOW-UP DATE</p>
-          <p style={{ fontSize: 13.5, fontWeight: 600 }}>{new Date(rx.followUp).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</p>
-        </div>
+        {rx.instructions && (
+          <div style={{ marginBottom: 20 }}>
+            <p className="muted" style={{ fontSize: 11.5, marginBottom: 4 }}>DOCTOR INSTRUCTIONS</p>
+            <p style={{ fontSize: 13.5 }}>{rx.instructions}</p>
+          </div>
+        )}
+
+        {rx.followUp && (
+          <div style={{ marginBottom: 26 }}>
+            <p className="muted" style={{ fontSize: 11.5, marginBottom: 4 }}>FOLLOW-UP DATE</p>
+            <p style={{ fontSize: 13.5, fontWeight: 600 }}>{formatDisplayDate(rx.followUp)}</p>
+          </div>
+        )}
 
         <div className="flex gap-10">
           <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => window.print()}>

@@ -1,28 +1,22 @@
 import { useState, useMemo } from "react";
-import Icon from "../components/Icon";
-import { demoAppointments, doctors, departments } from "../data/mockData";
+import { doctors, departments, formatDisplayDate } from "../data/mockData";
+import { useAppointments } from "../hooks/useSharedData";
 
 const statuses = ["All", "Upcoming", "Completed", "Cancelled", "Rescheduled"];
-
-// pad demo data with a few extra rows so the table feels real
-const extra = [
-  { id: "AP-2026-005510", doctorId: "doc-4", date: "2026-08-14", time: "02:00 PM", type: "In-person", status: "Upcoming" },
-  { id: "AP-2026-005321", doctorId: "doc-7", date: "2026-08-13", time: "11:30 AM", type: "Video consultation", status: "Rescheduled" },
-];
 
 export default function AdminAppointments() {
   const [status, setStatus] = useState("All");
   const [department, setDepartment] = useState("All");
-  const all = [...demoAppointments, ...extra];
+  const { allAppointments } = useAppointments();
 
   const filtered = useMemo(() => {
-    return all.filter((a) => {
+    return (allAppointments || []).filter((a) => {
       const doc = doctors.find((d) => d.id === a.doctorId);
       const matchStatus = status === "All" || a.status === status;
       const matchDept = department === "All" || doc?.department === department;
       return matchStatus && matchDept;
     });
-  }, [status, department]);
+  }, [allAppointments, status, department]);
 
   return (
     <div>
@@ -56,7 +50,7 @@ export default function AdminAppointments() {
                   <td style={{ padding: "12px 16px", fontSize: 13 }} className="font-mono">{a.id}</td>
                   <td style={{ padding: "12px 16px", fontWeight: 600, fontSize: 13.5 }}>{doc?.name}</td>
                   <td style={{ padding: "12px 16px", fontSize: 13.5 }}>{doc?.department}</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13.5 }}>{new Date(a.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</td>
+                  <td style={{ padding: "12px 16px", fontSize: 13.5 }}>{formatDisplayDate(a.date)}</td>
                   <td style={{ padding: "12px 16px", fontSize: 13.5 }}>{a.time}</td>
                   <td style={{ padding: "12px 16px" }}><StatusBadge status={a.status} /></td>
                 </tr>

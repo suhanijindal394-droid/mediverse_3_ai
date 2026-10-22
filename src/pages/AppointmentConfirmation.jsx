@@ -1,14 +1,15 @@
 import { useParams, useLocation, Link, Navigate } from "react-router-dom";
 import Icon from "../components/Icon";
-import { doctors, demoPatient } from "../data/mockData";
-import useLocalStorage from "../hooks/useLocalStorage";
+import { doctors, formatDisplayDate } from "../data/mockData";
+import { useAppointments, usePatientProfile } from "../hooks/useSharedData";
 
 export default function AppointmentConfirmation() {
   const { id } = useParams();
   const location = useLocation();
-  const [appointments] = useLocalStorage("mv_appointments", []);
+  const { appointments } = useAppointments();
+  const { patient } = usePatientProfile();
 
-  const appointment = location.state || appointments.find((a) => a.id === id);
+  const appointment = location.state || (appointments || []).find((a) => a.id === id);
   if (!appointment) return <Navigate to="/patient/appointments" replace />;
 
   const doc = doctors.find((d) => d.id === appointment.doctorId);
@@ -25,18 +26,18 @@ export default function AppointmentConfirmation() {
         </div>
         <h2 style={{ fontSize: 24, marginBottom: 6 }}>Appointment Confirmed</h2>
         <p className="muted" style={{ fontSize: 14, marginBottom: 26 }}>
-          A confirmation has been added to your dashboard.
+          A confirmation and notification have been added to your account.
         </p>
 
         <div style={{ textAlign: "left", background: "var(--bg-alt)", borderRadius: 14, padding: 20, marginBottom: 24 }}>
-          <Row label="Patient" value={demoPatient.name} />
-          <Row label="Patient ID" value={demoPatient.patientId} mono />
-          <Row label="Doctor" value={doc?.name} />
-          <Row label="Department" value={doc?.department} />
-          <Row label="Date" value={new Date(appointment.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} />
+          <Row label="Patient" value={patient.name} />
+          <Row label="Patient ID" value={patient.patientId} mono />
+          <Row label="Doctor" value={doc?.name || "Specialist"} />
+          <Row label="Department" value={doc?.department || "Hospital Clinic"} />
+          <Row label="Date" value={formatDisplayDate(appointment.date)} />
           <Row label="Time" value={appointment.time} />
-          <Row label="Hospital Location" value={doc?.location} />
-          <Row label="Room Number" value={appointment.room} />
+          <Row label="Hospital Location" value={doc?.location || "Main Block"} />
+          <Row label="Room Number" value={appointment.room || "Room 214, Block A"} />
           <Row label="Appointment ID" value={appointment.id} mono last />
         </div>
 
@@ -44,7 +45,7 @@ export default function AppointmentConfirmation() {
           <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => alert("Added to your calendar (demo).")}>
             <Icon name="calendar" size={15} /> Add to Calendar
           </button>
-          <Link to="/patient/appointments" className="btn btn-outline btn-sm" style={{ flex: 1 }}>View Appointment</Link>
+          <Link to="/patient/appointments" className="btn btn-outline btn-sm" style={{ flex: 1 }}>View All Appointments</Link>
         </div>
         <Link to="/patient/dashboard" className="btn btn-primary btn-block" style={{ marginTop: 10 }}>Back to Dashboard</Link>
       </div>

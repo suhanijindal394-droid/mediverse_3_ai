@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon";
-import { patientsList } from "../data/mockData";
+import { patientsList, formatDisplayDate } from "../data/mockData";
 
 export default function DoctorPatients() {
   const [query, setQuery] = useState("");
@@ -44,7 +44,7 @@ export default function DoctorPatients() {
             </div>
             <div className="grid grid-2" style={{ marginBottom: 16, gap: 10 }}>
               <MiniInfo label="Age" value={`${p.age} yrs`} />
-              <MiniInfo label="Last Visit" value={new Date(p.lastVisit).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />
+              <MiniInfo label="Last Visit" value={formatDisplayDate(p.lastVisit)} />
             </div>
             <Link to={`/doctor/patient/${p.patientId}`} className="btn btn-primary btn-sm btn-block">Open Medical Record</Link>
           </div>

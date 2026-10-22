@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import Icon from "./Icon";
 import useAuth from "../hooks/useAuth";
-import { demoPatient } from "../data/mockData";
+import { usePatientProfile, useNotifications } from "../hooks/useSharedData";
 import AIAssistant from "./AIAssistant";
 
 const navItems = [
@@ -13,14 +13,18 @@ const navItems = [
   { to: "/patient/reports", label: "My Reports", icon: "file" },
   { to: "/patient/medical-history", label: "Medical History", icon: "activity" },
   { to: "/patient/pharmacy", label: "Pharmacy", icon: "building" },
-  { to: "/patient/notifications", label: "Notifications", icon: "bell" },
+  { to: "/patient/notifications", label: "Notifications", icon: "bell", badge: true },
   { to: "/patient/profile", label: "Profile", icon: "user" },
 ];
 
 export default function PatientLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { logout } = useAuth();
+  const { patient } = usePatientProfile();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
+
+  const avatarInitial = (patient?.firstName?.[0] || patient?.name?.[0] || "P").toUpperCase();
 
   function handleLogout() {
     logout();
@@ -39,10 +43,29 @@ export default function PatientLayout() {
         <nav style={{ padding: "16px 12px", flex: 1, overflowY: "auto" }}>
           {navItems.map((item) => (
             <NavLink
-              key={item.to} to={item.to} onClick={() => setMobileOpen(false)}
-              className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
+              key={item.to}
+              to={item.to}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? "active" : ""}`
+              }
+              style={{ display: "flex", alignItems: "center" }}
             >
-              <Icon name={item.icon} size={17} /> {item.label}
+              <Icon name={item.icon} size={17} />
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.badge && unreadCount > 0 && (
+                <span
+                  className="badge badge-teal"
+                  style={{
+                    fontSize: 11,
+                    padding: "2px 7px",
+                    fontWeight: 700,
+                    borderRadius: 10,
+                  }}
+                >
+                  {unreadCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -63,13 +86,44 @@ export default function PatientLayout() {
             <Icon name="menu" size={22} />
           </button>
           <div style={{ flex: 1 }} />
-          <NavLink to="/patient/notifications" className="icon-btn"><Icon name="bell" size={19} /></NavLink>
-          <NavLink to="/patient/profile" className="flex items-center gap-8" style={{ marginLeft: 8 }}>
+          <NavLink
+            to="/patient/notifications"
+            className="icon-btn"
+            style={{ position: "relative" }}
+            title="Notifications"
+          >
+            <Icon name="bell" size={19} />
+            {unreadCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: -2,
+                  right: -2,
+                  background: "var(--teal-600)",
+                  color: "#fff",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  borderRadius: "50%",
+                  minWidth: 17,
+                  height: 17,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 2px",
+                  lineHeight: 1,
+                  border: "2px solid #fff",
+                }}
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </NavLink>
+          <NavLink to="/patient/profile" className="flex items-center gap-8" style={{ marginLeft: 8 }} title="Patient Profile">
             <div style={{
               width: 34, height: 34, borderRadius: "50%", background: "var(--navy-100)", color: "var(--navy-800)",
               display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13,
             }}>
-              {demoPatient.firstName[0]}
+              {avatarInitial}
             </div>
           </NavLink>
         </header>

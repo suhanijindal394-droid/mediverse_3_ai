@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon";
 import useAuth from "../hooks/useAuth";
-import { patientsList, demoPrescriptions, demoPatient } from "../data/mockData";
+import { patientsList } from "../data/mockData";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { usePrescriptions } from "../hooks/useSharedData";
 
 export default function PharmacyDashboard() {
   const [query, setQuery] = useState("");
@@ -11,6 +12,7 @@ export default function PharmacyDashboard() {
   const [notFound, setNotFound] = useState(false);
   const [dispensed, setDispensed] = useLocalStorage("mv_dispensed", []);
   const { session, logout } = useAuth();
+  const { allPrescriptions } = usePrescriptions();
   const navigate = useNavigate();
 
   function handleSearch(e) {
@@ -22,7 +24,7 @@ export default function PharmacyDashboard() {
       return;
     }
     setNotFound(false);
-    const rx = patient.patientId === demoPatient.patientId ? demoPrescriptions.filter((p) => p.status === "Active") : [];
+    const rx = (allPrescriptions || []).filter((p) => p.patientId === patient.patientId && p.status === "Active");
     setResult({ patient, prescriptions: rx });
   }
 

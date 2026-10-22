@@ -16,7 +16,7 @@ export default function AISpecialistFinder() {
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
-+
+
   function analyze(text) {
     const lower = text.toLowerCase();
     const isEmergency = emergencyKeywords.some((kw) => lower.includes(kw));

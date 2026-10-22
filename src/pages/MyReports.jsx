@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon";
-import { demoReports, doctors } from "../data/mockData";
+import { demoReports, doctors, formatDisplayDate } from "../data/mockData";
 
 const categoryIcon = {
   "Blood Tests": "activity", "Imaging": "file", "ECG": "activity",
@@ -48,7 +48,7 @@ export default function MyReports() {
                 <span className="badge badge-green">{r.status}</span>
               </div>
               <p className="muted" style={{ fontSize: 12.5 }}>
-                {new Date(r.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                {formatDisplayDate(r.date)}
               </p>
             </Link>
           );

@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import Icon from "../components/Icon";
-import { patientsList, demoPrescriptions, demoReports, demoPatient } from "../data/mockData";
+import { patientsList, demoReports, demoPatient } from "../data/mockData";
+import { usePrescriptions } from "../hooks/useSharedData";
 
 export default function DoctorPatientRecord() {
   const { patientId } = useParams();
   const [notes, setNotes] = useState("");
   const patient = patientsList.find((p) => p.patientId === patientId);
+  const { prescriptions: allPatientRx } = usePrescriptions(patientId);
+
   if (!patient) return <Navigate to="/doctor/patients" replace />;
 
   const hasFullRecord = patient.patientId === demoPatient.patientId;
-  const prescriptions = hasFullRecord ? demoPrescriptions : [];
+  const prescriptions = hasFullRecord ? allPatientRx : [];
   const reports = hasFullRecord ? demoReports : [];
 
   return (

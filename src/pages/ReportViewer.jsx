@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import Icon from "../components/Icon";
-import { demoReports, doctors, demoPatient } from "../data/mockData";
+import { demoReports, doctors, formatDisplayDate } from "../data/mockData";
+import { usePatientProfile } from "../hooks/useSharedData";
 
 export default function ReportViewer() {
   const { id } = useParams();
   const [showAISummary, setShowAISummary] = useState(false);
+  const { patient } = usePatientProfile();
   const report = demoReports.find((r) => r.id === id);
   if (!report) return <Navigate to="/patient/reports" replace />;
   const doc = doctors.find((d) => d.id === report.doctorId);
@@ -24,8 +26,8 @@ export default function ReportViewer() {
           </div>
 
           <div className="grid grid-2" style={{ marginBottom: 20 }}>
-            <Info label="Patient" value={demoPatient.name} />
-            <Info label="Test Date" value={new Date(report.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} />
+            <Info label="Patient" value={patient.name} />
+            <Info label="Test Date" value={formatDisplayDate(report.date)} />
             <Info label="Doctor" value={doc?.name} />
             <Info label="Department / Lab" value={report.department} />
           </div>
